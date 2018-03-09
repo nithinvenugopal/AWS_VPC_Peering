@@ -1,0 +1,191 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    
+    "Parameters": {
+                "PeerVPCcidr": {
+                        "Type": "String",
+                        "Description": "cidr of the new VPC that you want to create"
+                },
+                "VPCid": {
+                        "Type": "String",
+                        "Description": "VPC ID to which the new VPC will connect to"
+                        
+                },
+                "PeerVPCAccountId": {
+                        "Type": "String",
+                        "Description": "Peer owner id",
+                        "Default": "316397369247"
+                        
+                },
+                "existingcidr": {
+                        "Type": "String",
+                        "Description": "VPC ID to which the new VPC will connect to"
+                        
+                },
+                "subnet1cidr": {
+                        "Type": "String",
+                        "Description": "region of the new vpc"
+                                                
+                },
+                "subnet2cidr": {
+                        "Type": "String",
+                        "Description": "region of the new vpc"
+                                                
+                },
+                "subnet3cidr": {
+                        "Type": "String",
+                        "Description": "region of the new vpc"
+                                                
+                },
+        "subnet4cidr": {
+                        "Type": "String",
+                        "Description": "region of the new vpc"
+
+                },
+        "subnet5cidr": {
+                        "Type": "String",
+                        "Description": "region of the new vpc"
+
+                }
+        
+    },
+"Conditions" : {
+    "subnet3cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet3cidr"}, ""]}]},
+    "subnet4cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet4cidr"}, ""]}]},
+    "subnet5cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet5cidr"}, ""]}]}
+  },
+    
+  
+    "Resources": {
+    
+        "newvpc": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock" : {"Ref": "PeerVPCcidr" }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "6ca72d2b-25de-47fa-8b6e-9acf10d14fb2"
+                }
+            }
+        },
+        "VPCPeer": {
+            "Type": "AWS::EC2::VPCPeeringConnection",
+            "Properties": {
+                "PeerVpcId" : { "Ref": "newvpc" },
+                "VpcId": {
+                    "Ref": "VPCid"
+                },
+                "PeerOwnerId": {
+          "Ref": "PeerVPCAccountId"
+        }
+            },
+            "Subnet1": {
+            "Type": "AWS::EC2::Subnet",    
+    "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                },
+                "AvailabilityZone":{
+                  "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"a"]]
+                  },
+                "CidrBlock": {
+                  "Ref": "subnet1cidr"
+                }
+            }
+        },
+        "Subnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                },
+                "AvailabilityZone":{
+                   "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"b"]]
+                  },
+                "CidrBlock": {
+                  "Ref": "subnet2cidr"
+                }
+            }
+        },
+        "Subnet3": {
+            "Type": "AWS::EC2::Subnet",
+    "Condition" : "subnet3cond",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                },
+                "AvailabilityZone":{
+                  "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"c"]]
+                  },
+                "CidrBlock": {
+                  "Ref": "subnet3cidr"
+                }
+            }
+        },
+    "Subnet4": {
+            "Type": "AWS::EC2::Subnet",
+    "Condition" : "subnet4cond",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                },
+                "AvailabilityZone":{
+                  "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"d"]]
+                  },
+                "CidrBlock": {
+                  "Ref": "subnet4cidr"
+                }
+            }
+        },
+    "Subnet5": {
+            "Type": "AWS::EC2::Subnet",
+    "Condition" : "subnet5cond",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                },
+                "AvailabilityZone":{
+                  "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"e"]]
+                  },
+                "CidrBlock": {
+                  "Ref": "subnet5cidr"
+                }
+            }
+        },
+        "routetablenewvpc": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "newvpc"
+                }
+            }
+        },
+        "InternetGateway" : {
+         "Type" : "AWS::EC2::InternetGateway"
+        },
+        "AttachIG" : {
+   "Type" : "AWS::EC2::VPCGatewayAttachment",
+   "Properties" : {
+      "VpcId" : { "Ref" : "newvpc" },
+      "InternetGatewayId" : { "Ref" : "InternetGateway" }
+   }
+    },
+        
+        "routenewvpc": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "DestinationCidrBlock": {
+                  "Ref":"existingcidr"
+
+                },
+                "RouteTableId": {
+                    "Ref": "routetablenewvpc"
+                },
+                "VpcPeeringConnectionId": {
+                    "Ref": "VPCPeer"
+                }
+            }
+        }
+        }
+    }
