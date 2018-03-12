@@ -6,22 +6,6 @@
                         "Type": "String",
                         "Description": "cidr of the new VPC that you want to create"
                 },
-                "VPCid": {
-                        "Type": "String",
-                        "Description": "VPC ID to which the new VPC will connect to"
-                        
-                },
-                "PeerVPCAccountId": {
-                        "Type": "String",
-                        "Description": "Peer owner id",
-                        "Default": "316397369247"
-                        
-                },
-                "existingcidr": {
-                        "Type": "String",
-                        "Description": "VPC ID to which the new VPC will connect to"
-                        
-                },
                 "subnet1cidr": {
                         "Type": "String",
                         "Description": "region of the new vpc"
@@ -69,17 +53,6 @@
                 }
             }
         },
-        "VPCPeer": {
-            "Type": "AWS::EC2::VPCPeeringConnection",
-            "Properties": {
-                "PeerVpcId" : { "Ref": "newvpc" },
-                "VpcId": {
-                    "Ref": "VPCid"
-                },
-                "PeerOwnerId": {
-          "Ref": "PeerVPCAccountId"
-        }
-            },
             "Subnet1": {
             "Type": "AWS::EC2::Subnet",    
     "Properties": {
@@ -170,22 +143,16 @@
       "VpcId" : { "Ref" : "newvpc" },
       "InternetGatewayId" : { "Ref" : "InternetGateway" }
    }
-    },
-        
-        "routenewvpc": {
-            "Type": "AWS::EC2::Route",
-            "Properties": {
-                "DestinationCidrBlock": {
-                  "Ref":"existingcidr"
-
-                },
-                "RouteTableId": {
-                    "Ref": "routetablenewvpc"
-                },
-                "VpcPeeringConnectionId": {
-                    "Ref": "VPCPeer"
-                }
-            }
-        }
-        }
     }
+        },
+        "Outputs" : {
+  "rtid" : {
+    "Description" : "Routetable ID",
+    "Value" : {"Ref":"routetablenewvpc"}
+  },
+  "newvpcid" : {
+    "Description" : "VPC ID of the new VPC created",
+    "Value" : {"Ref":"newvpc"}
+  }
+}
+}
