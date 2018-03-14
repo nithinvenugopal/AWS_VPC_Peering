@@ -3,7 +3,7 @@
 region=$1
 masterregion=$2
 templatepath=$3
-accountid=316397369247
+accountid=$4
 tagname="testvpc"
 stackname="testvpcstack"
 
@@ -144,7 +144,28 @@ peerid=`aws ec2 create-vpc-peering-connection --region $region --peer-owner-id $
 
 sleep 10
 
-aws ec2 accept-vpc-peering-connection --region $masterregion --vpc-peering-connection-id $peerid
+acceptvpc=`aws ec2 accept-vpc-peering-connection --region $masterregion --vpc-peering-connection-id $peerid`
 
-aws ec2 create-route --route-table-id $rtid --destination-cidr-block $master_vpc_cidr --vpc-peering-connection-id $peerid
+createroute=`aws ec2 create-route --route-table-id $rtid --destination-cidr-block $master_vpc_cidr --vpc-peering-connection-id $peerid`
 
+rtassocid=`aws ec2 describe-route-tables --filters Name=vpc-id,Values=$newvpcid Name=association.main,Values=true --query "RouteTables[0].Associations[0].RouteTableAssociationId" --output text`
+
+replaceroutemain=`aws ec2 replace-route-table-association --association-id $rtassocid --route-table-id $rtid`
+
+igwid=`aws ec2 describe-internet-gateways --filters Name=attachment.vpc-id,Values=$newvpcid --query "InternetGateways[*].InternetGatewayId" --output text`
+
+createrouterq=`aws ec2 create-route --route-table-id $rtid --destination-cidr-block "0.0.0.0/0" --gateway-id $igwid`
+
+sgid=`aws ec2 create-security-group --description "Security group of the new VPC" --group-name "Main SG" --vpc-id $newvpcid --output text`
+
+authsg=`aws ec2 authorize-security-group-ingress --region $region --group-id $sgid --protocol all --cidr $ip`
+
+masterrtid=`aws ec2 describe-route-tables --region $masterregion --filters Name=vpc-id,Values=$master_vpc --query "RouteTables[*].Associations[0].RouteTableId" --output text`
+
+createrouteacc=`aws ec2 create-route --region $masterregion --route-table-id $masterrtid --destination-cidr-block $gen_vpc_cidr --vpc-peering-connection-id $peerid`
+
+mastersgid=`aws ec2 describe-security-groups --region $masterregion --filters Name=vpc-id,Values=$master_vpc --query "SecurityGroups[*].GroupId" --output text`
+
+authsg2=`aws ec2 authorize-security-group-ingress --region $masterregion --group-id $mastersgid --protocol all --cidr $gen_vpc_cidr`
+
+echo $region $masterregion $masterrtid $gen_vpc_cidr $mastersgid $peerid $sgid $newvpcid $rtid
