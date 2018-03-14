@@ -33,23 +33,21 @@
                 }
         
     },
-"Conditions" : {
+    "Conditions" : {
     "subnet3cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet3cidr"}, ""]}]},
     "subnet4cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet4cidr"}, ""]}]},
     "subnet5cond" : {"Fn::Not" : [{"Fn::Equals" : [{"Ref" : "subnet5cidr"}, ""]}]}
   },
-    
-  
     "Resources": {
-    
         "newvpc": {
             "Type": "AWS::EC2::VPC",
-            "Properties": {
-                "CidrBlock" : {"Ref": "PeerVPCcidr" }
-            },
+            "Properties": {"CidrBlock" : {"Ref": "PeerVPCcidr" },
+		"EnableDnsSupport" : "true",
+      		"EnableDnsHostnames" : "true"
+		},
             "Metadata": {
                 "AWS::CloudFormation::Designer": {
-                    "id": "6ca72d2b-25de-47fa-8b6e-9acf10d14fb2"
+                    "id": "9806a7bc-bc95-4c4e-82ce-d729e3156236"
                 }
             }
         },
@@ -62,6 +60,7 @@
                 "AvailabilityZone":{
                   "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"a"]]
                   },
+                  "MapPublicIpOnLaunch" : "true",
                 "CidrBlock": {
                   "Ref": "subnet1cidr"
                 }
@@ -76,6 +75,7 @@
                 "AvailabilityZone":{
                    "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"b"]]
                   },
+                  "MapPublicIpOnLaunch" : "true",
                 "CidrBlock": {
                   "Ref": "subnet2cidr"
                 }
@@ -91,6 +91,7 @@
                 "AvailabilityZone":{
                   "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"c"]]
                   },
+                  "MapPublicIpOnLaunch" : "true",
                 "CidrBlock": {
                   "Ref": "subnet3cidr"
                 }
@@ -106,6 +107,7 @@
                 "AvailabilityZone":{
                   "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"d"]]
                   },
+                  "MapPublicIpOnLaunch" : "true",
                 "CidrBlock": {
                   "Ref": "subnet4cidr"
                 }
@@ -121,6 +123,7 @@
                 "AvailabilityZone":{
                   "Fn::Join" : [ "", [{"Ref" : "AWS::Region"},"e"]]
                   },
+                  "MapPublicIpOnLaunch" : "true",
                 "CidrBlock": {
                   "Ref": "subnet5cidr"
                 }
@@ -144,8 +147,8 @@
       "InternetGatewayId" : { "Ref" : "InternetGateway" }
    }
     }
-        },
-        "Outputs" : {
+    },
+    "Outputs" : {
   "rtid" : {
     "Description" : "Routetable ID",
     "Value" : {"Ref":"routetablenewvpc"}
